@@ -27,19 +27,28 @@ class Mydrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
+
+          MyDrawerTile(
+              text: "P R O F I L E",
+              icon: Icons.person_2_outlined,
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/user_profile');
+              }),
+
           MyDrawerTile(
             text: "H O M E",
-            icon: Icons.home,
+            icon: Icons.home_outlined,
             onTap: () {
               Navigator.pop(context);
             },
           ),
           MyDrawerTile(
               text: "S E T T I N G S",
-              icon: Icons.settings,
+              icon: Icons.settings_outlined,
               onTap: () {
                 Navigator.pop(context);
-                context.go('/settings');
+                context.go('/settings_page');
                 // MaterialPageRoute(builder: )
               }),
           const Spacer(),
@@ -48,7 +57,7 @@ class Mydrawer extends StatelessWidget {
             icon: Icons.logout_outlined,
             onTap: () async {
               await FirebaseAuth.instance.signOut();
-              context.go('/login');
+              context.go('/login_user');
             },
           ),
           const SizedBox(

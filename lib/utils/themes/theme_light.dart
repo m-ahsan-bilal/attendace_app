@@ -1,14 +1,13 @@
-import "package:flutter/material.dart";
-import "package:google_fonts/google_fonts.dart";
+// theme_light.dart
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 ThemeData lightMode = ThemeData(
-  textTheme: GoogleFonts.montserratTextTheme(),
-  // fontFamily: "Roboto",
+  textTheme: GoogleFonts.montserratTextTheme(), // Set default font
   colorScheme: ColorScheme.light(
-    surface: Colors.grey.shade300,
-    primary: Colors.grey.shade500,
-    secondary: Colors.grey.shade100,
-    tertiary: Colors.white,
-    inversePrimary: Colors.grey.shade700,
+    surface: const Color(0xFFFFFFFF), // Light surface color
+    primary: const Color(0xFF6200EA), // Light primary color
+    secondary: const Color(0xFF03DAC6), // Light secondary color
+    inversePrimary: Colors.black, // Inverse primary color for contrast
   ),
 );

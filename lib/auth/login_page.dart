@@ -1,38 +1,75 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:attendace_task_app/widgets/my_button.dart';
 import 'package:attendace_task_app/widgets/my_text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:attendace_task_app/utils/themes/theme_provider.dart';
 
 class LoginUser extends StatefulWidget {
-  // final void Function()? onTap;
-  LoginUser({
-    super.key,
-  });
+  const LoginUser({super.key});
 
   @override
   State<LoginUser> createState() => _LoginUserState();
 }
 
-class _LoginUserState extends State<LoginUser> {
+class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
   final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
   bool _obscureText = true;
-  bool _isLoading = false; // New loading state
-  String? _errorMessage; // To store and display custom error messages
+  bool _isLoading = false;
+  String? _errorMessage;
   final emailFocus = FocusNode();
   final passwordFocus = FocusNode();
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Toggles password visibility
+  late AnimationController _scaleController;
+  late AnimationController _slideController;
+  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scaleAnimation = CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.easeInOut,
+    );
+
+    _slideController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+            CurvedAnimation(parent: _slideController, curve: Curves.easeInOut));
+
+    _scaleController.forward();
+    _slideController.forward();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    _scaleController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
+
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
   }
 
-  // Login method with Firebase Authentication
   Future<void> login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -40,28 +77,19 @@ class _LoginUserState extends State<LoginUser> {
         _errorMessage = null;
       });
       try {
-        // Firebase Authentication logic
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
-        // If successful, navigate to home dashboard
-        context.go('/home_dash');
+        context.go('/home_user');
       } on FirebaseAuthException catch (e) {
-        // Handle authentication errors
-        if (e.code == 'user-not-found') {
-          setState(() {
-            _errorMessage = 'No user found for that email.';
-          });
-        } else if (e.code == 'wrong-password') {
-          setState(() {
-            _errorMessage = 'Wrong password provided for that user.';
-          });
-        } else {
-          setState(() {
-            _errorMessage = 'An error occurred. Please try again later.';
-          });
-        }
+        setState(() {
+          _errorMessage = e.code == 'user-not-found'
+              ? 'No user found for that email.'
+              : e.code == 'wrong-password'
+                  ? 'Wrong password provided.'
+                  : 'An error occurred. Please try again later.';
+        });
       } finally {
         setState(() {
           _isLoading = false;
@@ -71,134 +99,113 @@ class _LoginUserState extends State<LoginUser> {
   }
 
   @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
+        // Wrap with SingleChildScrollView
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          height: screenHeight, // Full height
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
-              Icon(
-                Icons.person_outline_sharp,
-                size: 140,
-                color: Theme.of(context).colorScheme.inversePrimary,
+              SizedBox(height: MediaQuery.of(context).size.height * 0.14),
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Icon(
+                  Icons.person_outline_sharp,
+                  size: 140,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
               Text(
                 "Attendance System",
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.inversePrimary,
-                  fontSize: 15,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 24,
+                  fontFamily: GoogleFonts.montserrat().fontFamily,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 25),
-              // Email field with validation
-              MyTextField(
-                focusNode: emailFocus,
-                controller: emailController,
-                hintText: "Email",
-                obscureText: false,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!regex.hasMatch(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(passwordFocus);
-                },
-              ),
-              const SizedBox(height: 20),
-              // Password field with validation
-              MyTextField(
-                focusNode: passwordFocus,
-                controller: passwordController,
-                hintText: 'Password',
-                obscureText: _obscureText,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).unfocus();
-                },
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: _togglePasswordVisibility,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Forgot Password',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.inversePrimary),
-                textAlign: TextAlign.start,
-              ),
-              const SizedBox(height: 30),
-              // Display error messages
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              const SizedBox(height: 10),
-              // Sign In button with loading indicator
-              MyButton(
-                onTap: _isLoading ? null : login, // Disable button when loading
-                title: _isLoading ? "Signing In..." : "Sign In",
-              ),
-              const SizedBox(height: 20),
-              // Divider and social media sign in options
-              Row(
-                children: [
-                  const Expanded(
-                    child: Divider(thickness: 0.5),
-                  ),
-                  Text(
-                    ' Or With ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.inversePrimary,
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: MyTextField(
+                        focusNode: emailFocus,
+                        controller: emailController,
+                        hintText: "Email",
+                        obscureText: false,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!regex.hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).requestFocus(passwordFocus);
+                        },
+                        keyboardType: TextInputType.emailAddress,
+                      ),
                     ),
-                  ),
-                  const Expanded(
-                    child: Divider(thickness: 0.5),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: MyTextField(
+                        focusNode: passwordFocus,
+                        controller: passwordController,
+                        hintText: 'Password',
+                        obscureText: _obscureText,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          onPressed: _togglePasswordVisibility,
+                        ),
+                        keyboardType: TextInputType.visiblePassword,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    MyButton(
+                      onTap: _isLoading ? null : login,
+                      title: _isLoading ? "Signing In..." : "Sign In",
+                    ),
+                  ],
+                ),
               ),
-              // Remove Spacer() here to avoid layout issues
-              // Social media login buttons, if necessary
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              //     SquareTile(imagePath: "assets/images/google.png"),
-              //     SizedBox(width: 30),
-              //     SquareTile(imagePath: "assets/images/facebook.png"),
-              //   ],
-              // ),
-              // Register Now link
+              const Spacer(), // This pushes the text to the bottom
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -208,7 +215,7 @@ class _LoginUserState extends State<LoginUser> {
                       color: Theme.of(context).colorScheme.inversePrimary,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 5),
                   InkWell(
                     onTap: () => context.go('/register_user'),
                     child: Text(
@@ -221,9 +228,6 @@ class _LoginUserState extends State<LoginUser> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 20,
-              )
             ],
           ),
         ),
