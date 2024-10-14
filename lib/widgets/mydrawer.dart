@@ -12,14 +12,15 @@ class Mydrawer extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       child: Column(
         children: [
-          // app logo
           Padding(
-            padding: const EdgeInsets.only(top: 100),
-            child: Icon(
-              Icons.lock_open,
-              size: 80,
-              color: Theme.of(context).colorScheme.inversePrimary,
-            ),
+            padding: EdgeInsets.only(top: 60),
+            child: MyDrawerTile(
+                text: "P R O F I L E",
+                icon: Icons.person_2_outlined,
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/user_profile');
+                }),
           ),
           Padding(
             padding: const EdgeInsets.all(25.0),
@@ -27,14 +28,6 @@ class Mydrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
-
-          MyDrawerTile(
-              text: "P R O F I L E",
-              icon: Icons.person_2_outlined,
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user_profile');
-              }),
 
           MyDrawerTile(
             text: "H O M E",
@@ -51,7 +44,7 @@ class Mydrawer extends StatelessWidget {
                 context.go('/settings_page');
                 // MaterialPageRoute(builder: )
               }),
-          const Spacer(),
+          // const Spacer(),
           MyDrawerTile(
             text: "L O G  O U T",
             icon: Icons.logout_outlined,

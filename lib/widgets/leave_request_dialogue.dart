@@ -1,59 +1,70 @@
 import 'package:flutter/material.dart';
-import 'image_upload.dart'; // Import the ImageUpload widget
 
 class LeaveRequestDialog extends StatefulWidget {
-  const LeaveRequestDialog({Key? key}) : super(key: key);
+  const LeaveRequestDialog({super.key});
 
   @override
-  _LeaveRequestDialogState createState() => _LeaveRequestDialogState();
+  State<LeaveRequestDialog> createState() => _LeaveRequestDialogState();
 }
 
 class _LeaveRequestDialogState extends State<LeaveRequestDialog> {
-  TextEditingController leaveReasonController = TextEditingController();
-
-  @override
-  void dispose() {
-    leaveReasonController.dispose();
-    super.dispose();
-  }
+  final TextEditingController _leaveReasonController = TextEditingController();
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Leave Request'),
+      title: const Text('Leave Request'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Leave Reason Text Field
           TextField(
-            controller: leaveReasonController,
-            maxLines: 4, // Allow 3 to 4 lines for text input
+            controller: _leaveReasonController,
             decoration: InputDecoration(
               labelText: 'Reason for Leave',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              errorText: _errorMessage,
             ),
+            maxLines: 3,
           ),
-          SizedBox(height: 20),
-
-          // File picker for PDF/Image
-          ImageUpload(), // The custom ImageUpload widget
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              // Simulate file upload (frontend only)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('File Uploaded')),
+              );
+            },
+            child: const Text('Attach PDF/Image'),
+          ),
         ],
       ),
       actions: [
-        // Cancel Button
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Cancel'),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
-        // Submit Leave Request Button
         ElevatedButton(
           onPressed: () {
-            // Logic to submit the leave request with reason and file (if attached)
-            Navigator.of(context).pop();
+            if (_leaveReasonController.text.isEmpty) {
+              // Show error if text field is empty
+              setState(() {
+                _errorMessage = 'Reason for leave cannot be empty';
+              });
+            } else {
+              // Clear the error message and simulate submission
+              setState(() {
+                _errorMessage = null;
+              });
+
+              // Simulate leave request submission (UI only)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Leave Request Sent')),
+              );
+              Navigator.pop(context);
+            }
           },
-          child: Text('Submit'),
+          child: const Text('Submit'),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MyTextField extends StatelessWidget {
+  final maxLines;
   final Widget? suffixIcon; // Specify type as Widget
   final FocusNode? focusNode; // Specify type as FocusNode
   final TextEditingController
@@ -21,6 +22,7 @@ class MyTextField extends StatelessWidget {
     required this.validator,
     this.focusNode, // Made focusNode nullable
     required this.keyboardType,
+    this.maxLines,
   });
 
   @override
@@ -28,6 +30,7 @@ class MyTextField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50),
       child: TextFormField(
+        maxLines: maxLines,
         validator: validator,
         onFieldSubmitted: onFieldSubmitted,
         focusNode: focusNode,
