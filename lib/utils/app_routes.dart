@@ -8,8 +8,8 @@ import 'package:attendace_task_app/landing/splash.dart';
 import 'package:attendace_task_app/auth/login_page.dart';
 
 final GoRouter basicRoutes = GoRouter(
-  // initialLocation: '/',
-  initialLocation: '/home_user',
+  initialLocation: '/',
+  // initialLocation: '/home_user',
   routes: [
     GoRoute(
       path: '/',

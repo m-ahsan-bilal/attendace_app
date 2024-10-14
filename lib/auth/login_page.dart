@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:attendace_task_app/widgets/my_button.dart';
 import 'package:attendace_task_app/widgets/my_text_field.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:attendace_task_app/utils/themes/theme_provider.dart';
 
 class LoginUser extends StatefulWidget {
@@ -24,6 +24,9 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  // Variable to store the selected role (Admin or User)
+  bool _isAdmin = false;
 
   late AnimationController _scaleController;
   late AnimationController _slideController;
@@ -81,7 +84,13 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
-        context.go('/home_user');
+
+        // Navigate based on selected role
+        if (_isAdmin) {
+          context.go('/home_admin'); // Navigate to Admin home page
+        } else {
+          context.go('/home_user'); // Navigate to User home page
+        }
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.code == 'user-not-found'
@@ -101,12 +110,10 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SingleChildScrollView(
-        // Wrap with SingleChildScrollView
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           height: screenHeight, // Full height
@@ -133,6 +140,62 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 25),
+
+              // Toggle button for User/Admin selection
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAdmin = false; // Switch to User
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        color: _isAdmin ? Colors.grey[300] : Colors.blue,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      child: Text(
+                        "User",
+                        style: TextStyle(
+                          color: _isAdmin ? Colors.black : Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAdmin = true; // Switch to Admin
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        color: _isAdmin ? Colors.blue : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      child: Text(
+                        "Admin",
+                        style: TextStyle(
+                          color: _isAdmin ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 25),
               Form(
                 key: _formKey,
                 child: Column(
@@ -157,6 +220,7 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
                           FocusScope.of(context).requestFocus(passwordFocus);
                         },
                         keyboardType: TextInputType.emailAddress,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -186,6 +250,7 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
                           onPressed: _togglePasswordVisibility,
                         ),
                         keyboardType: TextInputType.visiblePassword,
+                        maxLines: 1, // Ensure maxLines is set to 1
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -205,7 +270,7 @@ class _LoginUserState extends State<LoginUser> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              const Spacer(), // This pushes the text to the bottom
+              const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

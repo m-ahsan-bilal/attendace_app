@@ -103,6 +103,7 @@ class _RegisterUserState extends State<RegisterUser>
                           hintText: "Email",
                           obscureText: false,
                           keyboardType: TextInputType.emailAddress,
+                          maxLines: 1,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
@@ -122,6 +123,7 @@ class _RegisterUserState extends State<RegisterUser>
                           controller: passwordController,
                           hintText: 'Password',
                           obscureText: _obscureText,
+                          maxLines: 1,
                           keyboardType: TextInputType.visiblePassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -152,6 +154,7 @@ class _RegisterUserState extends State<RegisterUser>
                           controller: confirmPasswordController,
                           hintText: 'Confirm Password',
                           obscureText: _obscureText,
+                          maxLines: 1,
                           keyboardType: TextInputType.visiblePassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
